@@ -102,7 +102,7 @@ def print_banner():
 
 def main():
     """Main function with command-line argument parsing."""
-    # print_banner()
+    print_banner()
 
     parser = argparse.ArgumentParser(
         description="IP Threat Intelligence Tool - Check multiple IP addresses for threats",
@@ -225,10 +225,10 @@ Examples:
                 results.append(result)
                 
             except KeyError as e:
-                print(f"Error: Rate limit exceeded", file=sys.stderr)
+                print(f"Error: API rate limit exceeded or invalid API token. Please check your API keys and try again later.", file=sys.stderr)
                 sys.exit(1)
             except Exception as e:
-                print(f"Error checking IP {ip}: {e}", file=sys.stderr)
+                print(f"Error checking IP {ip}: {e}. This may be due to API issues, network problems, or invalid API configuration.", file=sys.stderr)
                 # Continue with other IPs even if one fails
                 continue
         
@@ -291,7 +291,7 @@ Examples:
                 sys.exit(1)
                 
     except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
+        print(f"Error: {e}. Please check your API configuration and network connection.", file=sys.stderr)
         sys.exit(1)
 
 

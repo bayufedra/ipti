@@ -21,6 +21,11 @@ class IPTI:
             "threatbook": os.getenv("THREATBOOK_API_KEY"),
             "alienvault": os.getenv("ALIENVAULT_API_KEY")
         }
+        
+        # Check for missing API keys
+        missing_keys = [platform for platform, key in self.api_keys.items() if not key]
+        if missing_keys:
+            raise Exception(f"Missing API keys for: {', '.join(missing_keys)}. Please check your .env file.")
 
     # Check the IP address against the AbuseIPDB API
     def check_abuseipdb(self) -> bool:
@@ -36,6 +41,11 @@ class IPTI:
         }
 
         response = requests.get(API_URL, headers=headers, params=payload)
+        
+        # Check for API errors
+        if response.status_code != 200:
+            raise Exception(f"AbuseIPDB API: HTTP {response.status_code} - {response.text}")
+        
         data = response.json()['data']
         return data['abuseConfidenceScore'] >= self.score_threshold and data['numDistinctUsers'] >= self.user_threshold
 
@@ -48,6 +58,11 @@ class IPTI:
         }
 
         response = requests.get(API_URL, headers=headers)
+        
+        # Check for API errors
+        if response.status_code != 200:
+            raise Exception(f"VirusTotal API: HTTP {response.status_code} - {response.text}")
+        
         data = response.json()['data']['attributes']
         stats = data['last_analysis_stats']
 
@@ -66,6 +81,11 @@ class IPTI:
         }
         
         response = requests.post(API_URL, data=payload)
+        
+        # Check for API errors
+        if response.status_code != 200:
+            raise Exception(f"ThreatBook API: HTTP {response.status_code} - {response.text}")
+        
         data = response.json()['data']['summary']
 
         if data['judgments'] != []:
@@ -81,6 +101,11 @@ class IPTI:
         }
         
         response = requests.get(API_URL, headers=headers)
+        
+        # Check for API errors
+        if response.status_code != 200:
+            raise Exception(f"AlienVault API: HTTP {response.status_code} - {response.text}")
+        
         data = response.json()['pulse_info']
 
         if data['count'] > 0:
