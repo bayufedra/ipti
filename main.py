@@ -22,7 +22,7 @@ def generate_text_report(result: dict) -> str:
     
     # Generate platform results section
     platform_results = []
-    for platform, is_malicious in result["malicious_report"].items():
+    for platform, is_malicious in result["platforms"]["malicious_report"].items():
         status = "SAFE" if not is_malicious else "MALICIOUS"
         if not is_malicious:
             # Green checkmark for safe
@@ -45,21 +45,159 @@ def generate_text_report(result: dict) -> str:
         overall_icon = f"{Fore.RED}✗{Style.RESET_ALL}"
         overall_status_colored = f"{Fore.RED}{overall_status}{Style.RESET_ALL}"
     
+    # Add PTR information
+    ptr_info = result.get('ptr', {})
+    ptr_record = ptr_info.get('ptr', 'N/A')
+    ptr_risk = ptr_info.get('ptr_risk', 'Unknown')
+    
+    # Calculate PTR risk score based on risk level
+    ptr_risk_score = 0.0
+    if 'Normal / Branded' in ptr_risk:
+        ptr_risk_score = 1.0
+    elif 'Cloud Provider (Neutral)' in ptr_risk:
+        ptr_risk_score = 0.8
+    elif 'DNS Timeout (Medium Risk)' in ptr_risk or 'DNS Error (Medium Risk)' in ptr_risk:
+        ptr_risk_score = 0.5
+    elif 'Suspicious / Dynamic' in ptr_risk:
+        ptr_risk_score = 0.4
+    elif 'Unusual PTR (Possibly Fake)' in ptr_risk:
+        ptr_risk_score = 0.3
+    elif 'No PTR (High Risk)' in ptr_risk:
+        ptr_risk_score = 0.2
+    else:
+        ptr_risk_score = 0.5  # Default for unknown cases
+    
+    # Color code PTR risk
+    if 'High Risk' in ptr_risk or 'Suspicious' in ptr_risk or 'Unusual PTR' in ptr_risk:
+        ptr_risk_colored = f"{Fore.RED}{ptr_risk}{Style.RESET_ALL}"
+    elif 'Medium Risk' in ptr_risk or 'Neutral' in ptr_risk or 'DNS Timeout' in ptr_risk or 'DNS Error' in ptr_risk:
+        ptr_risk_colored = f"{Fore.YELLOW}{ptr_risk}{Style.RESET_ALL}"
+    else:
+        ptr_risk_colored = f"{Fore.GREEN}{ptr_risk}{Style.RESET_ALL}"
+
+    # Add server information
+    server_info = result.get('server_info', {})
+    country = server_info.get('country', 'Unknown')
+    city = server_info.get('city', 'Unknown')
+    org = server_info.get('org', 'Unknown')
+    isp = server_info.get('isp', 'Unknown')
+    
+    # Add risk assessment information
+    risk_assessment = server_info.get('risk_assessment', {})
+    geographic_risk = risk_assessment.get('geographic', {})
+    provider_risk = risk_assessment.get('provider', {})
+    overall_risk_level = risk_assessment.get('overall_risk_level', 'Unknown')
+    
+    # Color code risk levels
+    if overall_risk_level == "High":
+        risk_level_colored = f"{Fore.RED}{overall_risk_level}{Style.RESET_ALL}"
+    elif overall_risk_level == "Medium":
+        risk_level_colored = f"{Fore.YELLOW}{overall_risk_level}{Style.RESET_ALL}"
+    else:
+        risk_level_colored = f"{Fore.GREEN}{overall_risk_level}{Style.RESET_ALL}"
+    
+    # Add privacy information
+    privacy = server_info.get('privacy', {})
+    privacy_details = []
+    
+    # Display all privacy flags with their boolean values
+    proxy_value = privacy.get('proxy', False)
+    vpn_value = privacy.get('vpn', False)
+    tor_value = privacy.get('tor', False)
+    relay_value = privacy.get('relay', False)
+    
+    # Color code based on risk level
+    proxy_color = f"{Fore.YELLOW}" if proxy_value else f"{Fore.GREEN}"
+    vpn_color = f"{Fore.YELLOW}" if vpn_value else f"{Fore.GREEN}"
+    tor_color = f"{Fore.RED}" if tor_value else f"{Fore.GREEN}"
+    relay_color = f"{Fore.YELLOW}" if relay_value else f"{Fore.GREEN}"
+    
+    privacy_details.append(f"  Proxy: {proxy_color}{proxy_value}{Style.RESET_ALL}")
+    privacy_details.append(f"  VPN: {vpn_color}{vpn_value}{Style.RESET_ALL}")
+    privacy_details.append(f"  Tor: {tor_color}{tor_value}{Style.RESET_ALL}")
+    privacy_details.append(f"  Relay: {relay_color}{relay_value}{Style.RESET_ALL}")
+    
+    privacy_status = "\n".join(privacy_details)
+    
+    # Add risk breakdown
+    risk_breakdown = result.get('risk_breakdown', {})
+    platform_safe_ratio = risk_breakdown.get('platform_safe_ratio', 0)
+    server_safe_ratio = risk_breakdown.get('server_safe_ratio', 0)
+    port_safe_ratio = risk_breakdown.get('port_safe_ratio', 0)
+    comprehensive_safe_ratio = result.get('safe_ratio', 0)
+
+    # Add port analysis information
+    ports_data = result.get('ports', {})
+    risk_analysis = ports_data.get('risk_analysis', {})
+    ports_count = ports_data.get('ports_count', 0)
+    port_risk_level = risk_analysis.get('risk_level', 'Unknown')
+    
+    # Get port categories for display
+    port_categories = ports_data.get('port_categories', {})
+    high_risk_services = risk_analysis.get('high_risk_services', 0)
+    average_risk = risk_analysis.get('average_risk', 0.0)
+    
+    # Color code port risk level
+    if port_risk_level == "High" or port_risk_level == "Critical":
+        port_risk_colored = f"{Fore.RED}{port_risk_level}{Style.RESET_ALL}"
+    elif port_risk_level == "Medium":
+        port_risk_colored = f"{Fore.YELLOW}{port_risk_level}{Style.RESET_ALL}"
+    else:
+        port_risk_colored = f"{Fore.GREEN}{port_risk_level}{Style.RESET_ALL}"
+
     report = f"""=== IP Threat Intelligence Report ===
 IP Address: {result['ip']}
 Check Date: {result['check_date']}
-Max Age (days): {result['max_age_in_days']}
-Score Threshold: {result['score_threshold']}
-User Threshold: {result['user_threshold']}
-Safe Ratio: {result['safe_ratio']:.2f}
+Max Age (days): {result['platforms']['max_age_in_days']}
+Score Threshold: {result['platforms']['score_threshold']}
+User Threshold: {result['platforms']['user_threshold']}
 
-Platform Results:
+=== Server Information ===
+Country: {country}
+City: {city}
+Organization: {org}
+ISP: {isp}
+Privacy Information:
+{privacy_status}
+
+=== Risk Assessment ===
+Geographic Risk: {geographic_risk.get('risk_level', 'Unknown')} - {geographic_risk.get('reason', 'Unknown')}
+Provider Risk: {provider_risk.get('risk_level', 'Unknown')} - {provider_risk.get('reason', 'Unknown')}
+Overall Risk Level: {risk_level_colored}
+
+=== PTR Information ===
+PTR Record: {ptr_record}
+PTR Risk Assessment: {ptr_risk_colored}
+PTR Risk Score: {ptr_risk_score:.3f}
+
+=== Port Analysis ===
+Total Open Ports: {ports_count}
+Port Risk Level: {port_risk_colored}
+Average Risk Score: {average_risk:.3f}
+High Risk Services: {high_risk_services}
+Port Categories:
+  Web Services: {', '.join(map(str, port_categories.get('web_services', []))) if port_categories.get('web_services') else 'None'}
+  Database Services: {', '.join(map(str, port_categories.get('database_services', []))) if port_categories.get('database_services') else 'None'}
+  Mail Services: {', '.join(map(str, port_categories.get('mail_services', []))) if port_categories.get('mail_services') else 'None'}
+  Remote Access: {', '.join(map(str, port_categories.get('remote_access', []))) if port_categories.get('remote_access') else 'None'}
+  File Services: {', '.join(map(str, port_categories.get('file_services', []))) if port_categories.get('file_services') else 'None'}
+  Other Services: {', '.join(map(str, port_categories.get('other_services', []))) if port_categories.get('other_services') else 'None'}
+
+=== Platform Results ===
 {chr(10).join(platform_results)}
 
-Overall Assessment:
+=== Risk Breakdown ===
+Platform Safe Ratio: {platform_safe_ratio:.2f}
+Server Safe Ratio: {server_safe_ratio:.2f}
+Port Safe Ratio: {port_safe_ratio:.2f}
+PTR Safe Ratio: {ptr_risk_score:.2f}
+Comprehensive Safe Ratio: {comprehensive_safe_ratio:.2f}
+
+=== Overall Assessment ===
 {overall_icon} IP is considered {overall_status_colored}
-Platforms considered: {result['platforms_considered']}
-Platforms flagged as safe: {result['platforms_flagged_as_safe']}"""
+Platforms considered: {result['platforms']['platforms_considered']}
+Platforms flagged as safe: {result['platforms']['platforms_flagged_as_safe']}
+Comprehensive Safe Ratio: {comprehensive_safe_ratio:.3f}"""
     
     return report
 
@@ -71,10 +209,15 @@ def generate_summary_report(results: list) -> str:
     safe_ips = sum(1 for result in results if result["is_safe"])
     malicious_ips = total_ips - safe_ips
     
+    # Calculate average safe ratio
+    total_safe_ratio = sum(result.get('safe_ratio', 0) for result in results)
+    avg_safe_ratio = total_safe_ratio / total_ips if total_ips > 0 else 0
+    
     summary = f"""=== IP Threat Intelligence Summary Report ===
 Total IPs Checked: {total_ips}
 Safe IPs: {Fore.GREEN}{safe_ips}{Style.RESET_ALL}
 Malicious IPs: {Fore.RED}{malicious_ips}{Style.RESET_ALL}
+Average Safe Ratio: {avg_safe_ratio:.3f}
 
 Detailed Results:
 """
@@ -82,7 +225,30 @@ Detailed Results:
     for i, result in enumerate(results, 1):
         status_icon = f"{Fore.GREEN}✓{Style.RESET_ALL}" if result["is_safe"] else f"{Fore.RED}✗{Style.RESET_ALL}"
         status_text = f"{Fore.GREEN}SAFE{Style.RESET_ALL}" if result["is_safe"] else f"{Fore.RED}MALICIOUS{Style.RESET_ALL}"
-        summary += f"{i}. {status_icon} {result['ip']} - {status_text}\n"
+        safe_ratio = result.get('safe_ratio', 0)
+        
+        # Add PTR information if available
+        ptr_info = result.get('ptr', {})
+        ptr_risk = ptr_info.get('ptr_risk', 'Unknown')
+        
+        # Add privacy information if available
+        server_info = result.get('server_info', {})
+        privacy = server_info.get('privacy', {})
+        privacy_details = []
+        
+        proxy_value = privacy.get('proxy', False)
+        vpn_value = privacy.get('vpn', False)
+        tor_value = privacy.get('tor', False)
+        relay_value = privacy.get('relay', False)
+        
+        privacy_details.append(f"Proxy:{proxy_value}")
+        privacy_details.append(f"VPN:{vpn_value}")
+        privacy_details.append(f"Tor:{tor_value}")
+        privacy_details.append(f"Relay:{relay_value}")
+        
+        privacy_status = " ".join(privacy_details)
+        
+        summary += f"{i}. {status_icon} {result['ip']} - {status_text} (Safe Ratio: {safe_ratio:.3f}, PTR: {ptr_risk}, Privacy: {privacy_status})\n"
     
     return summary
 
@@ -105,7 +271,7 @@ def main():
     print_banner()
 
     parser = argparse.ArgumentParser(
-        description="IP Threat Intelligence Tool - Check multiple IP addresses for threats",
+        description="IP Threat Intelligence Tool - Comprehensive IP threat analysis using multiple security platforms",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -153,14 +319,14 @@ Examples:
         "--max-score", "-s",
         type=int,
         default=30,
-        help="Maximum score threshold (default: 30)"
+        help="Maximum score threshold (range 1-100, default: 30)"
     )
     
     parser.add_argument(
         "--safe-ratio", "-r",
         type=float,
         default=0.75,
-        help="Safe ratio threshold (default: 0.75)"
+        help="Safe ratio threshold (range 0.1-1.0, default: 0.75)"
     )
     
     parser.add_argument(
@@ -209,6 +375,11 @@ Examples:
         
         # Process each IP address
         for ip in ips_to_check:
+            # Skip empty IPs
+            if not ip or not ip.strip():
+                print(f"[WARNING] Skipping empty IP address", file=sys.stderr)
+                continue
+                
             try:
                 print(f"[INFO] Checking IP: {ip}", file=sys.stderr)
                 
@@ -221,16 +392,21 @@ Examples:
                     safe_ratio=args.safe_ratio
                 )
                 
-                result = ipti.is_malicious()
+                result = ipti.ipti_check()
                 results.append(result)
                 
             except KeyError as e:
                 print(f"Error: API rate limit exceeded or invalid API token. Please check your API keys and try again later.", file=sys.stderr)
                 sys.exit(1)
             except Exception as e:
-                print(f"Error checking IP {ip}: {e}. This may be due to API issues, network problems, or invalid API configuration.", file=sys.stderr)
-                # Continue with other IPs even if one fails
-                continue
+                error_msg = str(e)
+                if "Missing API keys" in error_msg:
+                    print(f"Error: {error_msg}. Please check your .env file and ensure all required API keys are set.", file=sys.stderr)
+                    sys.exit(1)
+                else:
+                    print(f"Error checking IP {ip}: {error_msg}. This may be due to API issues, network problems, or invalid API configuration.", file=sys.stderr)
+                    # Continue with other IPs even if one fails
+                    continue
         
         if not results:
             print("No IP addresses were successfully checked.", file=sys.stderr)
@@ -262,7 +438,7 @@ Examples:
         # Output to file if specified
         if args.output_file:
             try:
-                with open(args.output_file, 'w') as f:
+                with open(args.output_file, 'w', encoding='utf-8') as f:
                     if args.output_format == "json":
                         if len(results) == 1:
                             json.dump(results[0], f, indent=2)
@@ -291,7 +467,7 @@ Examples:
                 sys.exit(1)
                 
     except Exception as e:
-        print(f"Error: {e}. Please check your API configuration and network connection.", file=sys.stderr)
+        print(f"Unexpected error: {e}. Please check your API configuration, network connection, and ensure all required dependencies are installed.", file=sys.stderr)
         sys.exit(1)
 
 
