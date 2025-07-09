@@ -70,4 +70,3 @@ def check_ptr_risk(ip: str, timeout: int = 5) -> dict:
     
     else:
         return {"ptr": ptr, "ptr_risk": "Normal / Branded"}
-
