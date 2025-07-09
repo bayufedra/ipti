@@ -1,4 +1,4 @@
-# IP Threat Intelligence Tool (IPTI)
+# IP Threat Intelligence (IPTI)
 
 A comprehensive Python tool for checking IP addresses against multiple threat intelligence platforms to determine if they are malicious or safe. This tool provides advanced threat assessment through multi-platform analysis, geographic risk evaluation, port scanning, and DNS analysis.
 
