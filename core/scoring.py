@@ -16,8 +16,8 @@ class IPScoring:
         self.weights = {
             "platforms": 0.5,  # 50% weight (reduced from 0.4)
             "ptr": 0.15,       # 15% weight (increased from 0.1)
-            "ports": 0.2,      # 20% weight (unchanged)
-            "ipinfo": 0.15     # 15% weight (reduced from 0.3)
+            "ports": 0.15,      # 20% weight (unchanged)
+            "ipinfo": 0.2     # 15% weight (reduced from 0.3)
         }
     
     def _calculate_ptr_score(self, ptr_result: Dict[str, Any]) -> float:
