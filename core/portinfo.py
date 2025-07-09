@@ -8,42 +8,9 @@ from config import API_KEYS
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Simple cache for port data (in production, consider using Redis or similar)
 _port_cache = {}
-_cache_ttl = 3600  # 1 hour cache TTL
+_cache_ttl = 3600
 
-def set_cache_ttl(ttl_seconds: int) -> None:
-
-    global _cache_ttl
-    _cache_ttl = ttl_seconds
-    logger.info(f"Cache TTL set to {ttl_seconds} seconds")
-
-def clear_cache() -> None:
-    """Clear all cached port data."""
-    global _port_cache
-    _port_cache.clear()
-    logger.info("Port cache cleared")
-
-def get_cache_stats() -> Dict:
-
-    current_time = time.time()
-    valid_entries = 0
-    expired_entries = 0
-    
-    for ip, data in _port_cache.items():
-        if current_time - data["timestamp"] < _cache_ttl:
-            valid_entries += 1
-        else:
-            expired_entries += 1
-    
-    return {
-        "total_entries": len(_port_cache),
-        "valid_entries": valid_entries,
-        "expired_entries": expired_entries,
-        "cache_ttl": _cache_ttl
-    }
-
-# Risk levels for different port types
 HIGH_RISK_PORTS = {
     21: "FTP", 22: "SSH", 23: "Telnet", 25: "SMTP", 53: "DNS",
     80: "HTTP", 110: "POP3", 143: "IMAP", 443: "HTTPS", 993: "IMAPS",

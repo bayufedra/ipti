@@ -278,48 +278,63 @@ print(f"PTR Risk: {ptr_data['ptr_risk']}")
 
 ## 🧠 Assessment Logic
 
-The tool uses a comprehensive multi-factor assessment system to determine if an IP is safe or malicious:
+The tool uses a comprehensive multi-factor assessment system to determine if an IP is safe or malicious.
 
-### 1. Platform Threat Intelligence (60% weight)
+### Current Scoring System (Enhanced)
+Uses the following weight distribution:
+
+#### 1. Platform Threat Intelligence (50% weight)
 Each platform returns a boolean indicating if the IP is considered malicious:
 - **AbuseIPDB**: Based on abuse confidence score and user count thresholds
 - **VirusTotal**: Based on malicious/suspicious detection counts and reputation score
 - **ThreatBook IO**: Based on threat judgments and recency
 - **AlienVault OTX**: Based on threat pulse count and recency
 
-### 2. Server Information Analysis (25% weight)
+#### 2. PTR Record Analysis (15% weight)
+Evaluates DNS PTR records for suspicious patterns:
+- **Normal/Branded**: 1.0 score (low risk)
+- **Cloud Provider (Neutral)**: 0.8 score
+- **DNS Timeout/Error**: 0.5-0.6 score (medium risk)
+- **Suspicious/Dynamic**: 0.4 score
+- **Unusual PTR**: 0.3 score (high risk)
+- **No PTR**: 0.2 score (very high risk)
+
+#### 3. Port Analysis (15% weight)
+Evaluates open ports and services:
+- **Port Risk Scoring**: Each port assessed for risk level
+- **Service Categorization**: Web, database, mail, remote access, file services
+- **Multiple High-Risk Services**: 
+  - 15% penalty for 2+ high-risk services
+  - 30% penalty for 4+ high-risk services
+- **Database + Web Services**: 20% penalty for exposed databases with web services
+
+#### 4. Server Information Analysis (20% weight)
 Combines multiple risk factors:
-- **Geographic Risk**: 30% penalty for high-risk countries
-- **Provider Risk**: 20% penalty for high-risk hosting providers
+- **Geographic Risk**: 40% penalty for high-risk countries
+- **Provider Risk**: 30% penalty for high-risk hosting providers
 - **Privacy/Proxy Detection**: 
   - Proxy: 15% penalty
   - VPN: 10% penalty
   - Tor: 25% penalty
   - Relay: 20% penalty
 
-### 3. Port Analysis (15% weight)
-Evaluates open ports and services:
-- **Port Risk Scoring**: Each port assessed for risk level
-- **Service Categorization**: Web, database, mail, remote access, file services
-- **Multiple High-Risk Services**: Additional penalties for multiple risky services
-- **Database + Web Services**: Penalty for exposed databases with web services
-
-### 4. PTR Record Analysis
-Evaluates DNS PTR records for suspicious patterns:
-- **Normal/Branded**: Low risk
-- **Cloud Provider**: Neutral risk
-- **Suspicious/Dynamic**: Medium risk
-- **Unusual PTR**: High risk
-- **No PTR**: Very high risk
-
 ### Comprehensive Safe Ratio Calculation
+
+**Current System:**
 ```
-comprehensive_safe_ratio = (platform_ratio × 0.6) + (server_ratio × 0.25) + (port_ratio × 0.15)
+comprehensive_safe_ratio = (platform_ratio × 0.5) + (ptr_ratio × 0.15) + (port_ratio × 0.15) + (server_ratio × 0.2)
 ```
 
 ### Final Assessment
 - **SAFE**: `comprehensive_safe_ratio ≥ SAFE_RATIO` (default: 0.75)
 - **MALICIOUS**: `comprehensive_safe_ratio < SAFE_RATIO`
+
+**Risk Levels:**
+- **Low Risk**: score ≥ 0.85
+- **Medium Risk**: score ≥ 0.7
+- **High Risk**: score ≥ 0.5
+- **Very High Risk**: score ≥ 0.3
+- **Critical Risk**: score < 0.3
 
 ## 📊 Output Formats
 

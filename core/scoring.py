@@ -14,28 +14,30 @@ class IPScoring:
         
         # Scoring weights (must sum to 1.0)
         self.weights = {
-            "platforms": 0.5,  # 50% weight (reduced from 0.4)
-            "ptr": 0.15,       # 15% weight (increased from 0.1)
-            "ports": 0.15,      # 20% weight (unchanged)
-            "ipinfo": 0.2     # 15% weight (reduced from 0.3)
+            "platforms": 0.5,  # 50% weight for platforms
+            "ptr": 0.15,       # 15% weight for PTR
+            "ports": 0.15,     # 15% weight for ports
+            "ipinfo": 0.2      # 20% weight for server info
         }
     
     def _calculate_ptr_score(self, ptr_result: Dict[str, Any]) -> float:
         ptr_risk = ptr_result.get("ptr_risk", "Unknown")
+        ptr_safe_ratio = 0.5  # Default for unknown cases
         
-        # Score mapping based on risk levels
-        risk_scores = {
-            "Normal / Branded": 1.0,
-            "Cloud Provider (Neutral)": 0.8,
-            "DNS Timeout (Medium Risk)": 0.6,
-            "Suspicious / Dynamic": 0.4,
-            "Unusual PTR (Possibly Fake)": 0.3,
-            "No PTR (High Risk)": 0.2,
-            "DNS Error (Medium Risk)": 0.5,
-            "Unknown": 0.5  # Default for unknown cases
-        }
+        if "Normal / Branded" in ptr_risk:
+            ptr_safe_ratio = 1.0
+        elif "Cloud Provider (Neutral)" in ptr_risk:
+            ptr_safe_ratio = 0.8
+        elif "DNS Timeout (Medium Risk)" in ptr_risk or "DNS Error (Medium Risk)" in ptr_risk:
+            ptr_safe_ratio = 0.5
+        elif "Suspicious / Dynamic" in ptr_risk:
+            ptr_safe_ratio = 0.4
+        elif "Unusual PTR (Possibly Fake)" in ptr_risk:
+            ptr_safe_ratio = 0.3
+        elif "No PTR (High Risk)" in ptr_risk:
+            ptr_safe_ratio = 0.2
         
-        return risk_scores.get(ptr_risk, 0.5)
+        return ptr_safe_ratio
     
     def _calculate_platforms_score(self, platforms_result: Dict[str, Any]) -> float:
         return platforms_result.get("platforms_safe_ratio", 0.0)

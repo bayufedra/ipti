@@ -8,6 +8,7 @@ from core.platforms import TrustedPlatforms
 from core.portinfo import check_ports
 from core.ipinfo import check_server_info
 from core.ptr import check_ptr_risk
+from core.scoring import score_ip
 
 #### CONSTANTS ####
 API_KEYS = cfg.API_KEYS
@@ -45,39 +46,40 @@ class IPTI:
 
     # Check if the IP address is malicious
     def ipti_check(self) -> dict:
-        platforms_data = self.platform_checker.check_platforms()
-        ports_data = check_ports(self.ip)
-        server_info_data = check_server_info(self.ip)
-        ptr_data = check_ptr_risk(self.ip)
-
-        # Calculate comprehensive safe ratio including server factors
-        platform_safe_ratio = platforms_data["platforms_safe_ratio"]
-        server_safe_ratio = server_info_data["server_safe_ratio"]
-        port_safe_ratio = ports_data["server_safe_ratio"]
+        # Create platform configuration for scoring
+        platform_config = {
+            "max_age_in_days": self.max_age_in_days,
+            "score_threshold": self.score_threshold,
+            "user_threshold": self.user_threshold,
+            "safe_ratio": self.safe_ratio
+        }
         
-        # Weighted average: 60% platforms, 25% server info, 15% ports
-        comprehensive_safe_ratio = (
-            platform_safe_ratio * 0.6 +
-            server_safe_ratio * 0.25 +
-            port_safe_ratio * 0.15
-        )
+        # Use the scoring system to get comprehensive results
+        scoring_result = score_ip(self.ip, self.api_keys, platform_config)
         
-        # Determine overall safety based on comprehensive ratio
-        is_safe = comprehensive_safe_ratio >= self.safe_ratio
-
+        # Extract individual results from score breakdown
+        score_breakdown = scoring_result.get("score_breakdown", {})
+        platforms_details = score_breakdown.get("platforms", {}).get("details", {})
+        ptr_details = score_breakdown.get("ptr", {}).get("details", {})
+        ports_details = score_breakdown.get("ports", {}).get("details", {})
+        ipinfo_details = score_breakdown.get("ipinfo", {}).get("details", {})
+        
+        # Determine overall safety based on the scoring result
+        is_safe = scoring_result.get("overall_safe_score", 0.0) >= self.safe_ratio
+        
         return {
             "ip": self.ip,
             "check_date": self.now.strftime("%Y-%m-%d %H:%M:%S"),
-            "platforms": platforms_data,
-            "ports": ports_data,
-            "server_info": server_info_data,
-            "ptr": ptr_data,
-            "safe_ratio": comprehensive_safe_ratio,
             "is_safe": is_safe,
+            "safe_ratio": scoring_result.get("overall_safe_score", 0.0),
+            "platforms": platforms_details,
+            "ptr": ptr_details,
+            "ports": ports_details,
+            "server_info": ipinfo_details,
             "risk_breakdown": {
-                "platform_safe_ratio": platform_safe_ratio,
-                "server_safe_ratio": server_safe_ratio,
-                "port_safe_ratio": port_safe_ratio,
-                "comprehensive_safe_ratio": comprehensive_safe_ratio
+                "platform_safe_ratio": score_breakdown.get("platforms", {}).get("score", 0.0),
+                "ptr_safe_ratio": score_breakdown.get("ptr", {}).get("score", 0.0),
+                "port_safe_ratio": score_breakdown.get("ports", {}).get("score", 0.0),
+                "server_safe_ratio": score_breakdown.get("ipinfo", {}).get("score", 0.0)
             }
         }

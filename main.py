@@ -50,22 +50,11 @@ def generate_text_report(result: dict) -> str:
     ptr_record = ptr_info.get('ptr', 'N/A')
     ptr_risk = ptr_info.get('ptr_risk', 'Unknown')
     
-    # Calculate PTR risk score based on risk level
-    ptr_risk_score = 0.0
-    if 'Normal / Branded' in ptr_risk:
-        ptr_risk_score = 1.0
-    elif 'Cloud Provider (Neutral)' in ptr_risk:
-        ptr_risk_score = 0.8
-    elif 'DNS Timeout (Medium Risk)' in ptr_risk or 'DNS Error (Medium Risk)' in ptr_risk:
-        ptr_risk_score = 0.5
-    elif 'Suspicious / Dynamic' in ptr_risk:
-        ptr_risk_score = 0.4
-    elif 'Unusual PTR (Possibly Fake)' in ptr_risk:
-        ptr_risk_score = 0.3
-    elif 'No PTR (High Risk)' in ptr_risk:
-        ptr_risk_score = 0.2
-    else:
-        ptr_risk_score = 0.5  # Default for unknown cases
+    # Add risk breakdown
+    risk_breakdown = result.get('risk_breakdown', {})
+    
+    # Get PTR risk score from the scoring system
+    ptr_risk_score = risk_breakdown.get('ptr_safe_ratio', 0.5)
     
     # Color code PTR risk
     if 'High Risk' in ptr_risk or 'Suspicious' in ptr_risk or 'Unusual PTR' in ptr_risk:
@@ -119,9 +108,9 @@ def generate_text_report(result: dict) -> str:
     
     privacy_status = "\n".join(privacy_details)
     
-    # Add risk breakdown
-    risk_breakdown = result.get('risk_breakdown', {})
+    # Get risk breakdown values
     platform_safe_ratio = risk_breakdown.get('platform_safe_ratio', 0)
+    ptr_safe_ratio = risk_breakdown.get('ptr_safe_ratio', 0)
     server_safe_ratio = risk_breakdown.get('server_safe_ratio', 0)
     port_safe_ratio = risk_breakdown.get('port_safe_ratio', 0)
     comprehensive_safe_ratio = result.get('safe_ratio', 0)
@@ -188,9 +177,9 @@ Port Categories:
 
 === Risk Breakdown ===
 Platform Safe Ratio: {platform_safe_ratio:.2f}
+PTR Safe Ratio: {ptr_safe_ratio:.2f}
 Server Safe Ratio: {server_safe_ratio:.2f}
 Port Safe Ratio: {port_safe_ratio:.2f}
-PTR Safe Ratio: {ptr_risk_score:.2f}
 Comprehensive Safe Ratio: {comprehensive_safe_ratio:.2f}
 
 === Overall Assessment ===
