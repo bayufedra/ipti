@@ -536,6 +536,10 @@ If you encounter any issues or have questions:
 
 ### Get in Touch
 Have questions, suggestions, or need help? I'd love to hear from you!
+### Support Options
+- **🐛 Bug Reports**: [GitHub Issues](https://github.com/bayufedra/ipti/issues)
+- **💡 Feature Requests**: [GitHub Discussions](https://github.com/bayufedra/ipti/discussions)
+- **📖 Documentation**: Check the sections above for detailed usage
 
 ### Connect With Me
 <div align="center">
@@ -546,11 +550,6 @@ Have questions, suggestions, or need help? I'd love to hear from you!
 [![Email](https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:bayufedra@gmail.com)
 
 </div>
-
-### Support Options
-- **🐛 Bug Reports**: [GitHub Issues](https://github.com/bayufedra/ipti/issues)
-- **💡 Feature Requests**: [GitHub Discussions](https://github.com/bayufedra/ipti/discussions)
-- **📖 Documentation**: Check the sections above for detailed usage
 
 ---
 
