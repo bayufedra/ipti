@@ -532,7 +532,7 @@ If you encounter any issues or have questions:
 3. Ensure all dependencies are properly installed
 4. Check API rate limits and service status
 
-## 📞 Contact & Support
+## 📞 Contact
 
 ### Get in Touch
 Have questions, suggestions, or need help? I'd love to hear from you!
@@ -546,12 +546,6 @@ Have questions, suggestions, or need help? I'd love to hear from you!
 [![Email](https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:bayufedra@gmail.com)
 
 </div>
-
-### Quick Links
-- **📧 Email**: [bayufedra@gmail.com](mailto:bayufedra@gmail.com)
-- **💼 LinkedIn**: [Bayu Fedra](https://www.linkedin.com/in/bayufedra)
-- **🐦 Twitter/X**: [@bayufedraa](https://x.com/bayufedraa)
-- **📸 Instagram**: [@bayufedraa](https://www.instagram.com/bayufedraa)
 
 ### Support Options
 - **🐛 Bug Reports**: [GitHub Issues](https://github.com/bayufedra/ipti/issues)
