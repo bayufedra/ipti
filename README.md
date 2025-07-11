@@ -344,16 +344,19 @@ Provides colored terminal output with detailed information about each assessment
 ```
 === IP Threat Intelligence Report ===
 IP Address: 8.8.8.8
-Check Date: 2024-01-15 10:30:00
+Check Date: 2025-07-11 05:49:41
+Max Age (days): 30
+Score Threshold: 30
+User Threshold: 3
 
 === Server Information ===
-Country: United States
-City: New York
-Organization: Cloudflare Inc
-ISP: Cloudflare Inc
+Country: US
+City: Mountain View
+Organization: AS15169 Google LLC
+ISP: Unknown
 Privacy Information:
-  Proxy: True
-  VPN: True
+  Proxy: False
+  VPN: False
   Tor: False
   Relay: False
 
@@ -364,27 +367,40 @@ Overall Risk Level: Low
 
 === PTR Information ===
 PTR Record: dns.google
-PTR Risk Assessment: Normal / Branded
+PTR Risk Assessment: Cloud Provider (Neutral)
+PTR Risk Score: 0.800
 
 === Port Analysis ===
-Total Open Ports: 0
-Port Risk Level: Low
-Average Risk Score: 0.000
+Total Open Ports: 2
+Port Risk Level: Critical
+Average Risk Score: 0.700
+High Risk Services: 2
+Port Categories:
+  Web Services: 443
+  Database Services: None
+  Mail Services: None
+  Remote Access: None
+  File Services: None
+  Other Services: 53
 
 === Platform Results ===
   AbuseIPDB: ✓ SAFE
   VirusTotal: ✓ SAFE
-  Threatbook IO: ✓ SAFE
+  Threatbook IO: ✗ MALICIOUS
   Alienvault OTX: ✓ SAFE
 
 === Risk Breakdown ===
-Platform Safe Ratio: 1.00
+Platform Safe Ratio: 0.75
+PTR Safe Ratio: 0.80
 Server Safe Ratio: 1.00
-Port Safe Ratio: 1.00
-Comprehensive Safe Ratio: 1.00
+Port Safe Ratio: 0.26
+Comprehensive Safe Ratio: 0.73
 
 === Overall Assessment ===
-✓ IP is considered SAFE
+✗ IP is considered MALICIOUS
+Platforms considered: 4
+Platforms flagged as safe: 3
+Comprehensive Safe Ratio: 0.733
 ```
 
 ### JSON Format
@@ -393,38 +409,74 @@ Returns structured JSON data for programmatic use:
 ```json
 {
   "ip": "8.8.8.8",
-  "check_date": "2024-01-15 10:30:00",
+  "check_date": "2025-07-11 05:51:43",
+  "is_safe": false,
+  "safe_ratio": 0.7332,
   "platforms": {
     "malicious_report": {
       "abuseipdb": false,
       "virustotal": false,
-      "threatbook": false,
+      "threatbook": true,
       "alienvault": false
     },
     "max_age_in_days": 30,
     "score_threshold": 30,
     "user_threshold": 3,
     "platforms_considered": 4,
-    "platforms_flagged_as_safe": 4,
-    "platforms_safe_ratio": 1.0,
+    "platforms_flagged_as_safe": 3,
+    "platforms_safe_ratio": 0.75,
     "is_safe": true
   },
+  "ptr": {
+    "ptr": "dns.google",
+    "ptr_risk": "Cloud Provider (Neutral)"
+  },
   "ports": {
-    "ports": [],
-    "ports_count": 0,
-    "server_safe_ratio": 1.0,
-    "port_categories": {},
+    "ports": [
+      443,
+      53
+    ],
+    "ports_count": 2,
+    "server_safe_ratio": 0.255,
+    "port_categories": {
+      "web_services": [
+        443
+      ],
+      "database_services": [],
+      "mail_services": [],
+      "remote_access": [],
+      "file_services": [],
+      "other_services": [
+        53
+      ]
+    },
     "risk_analysis": {
-      "risk_level": "Low",
-      "reason": "No open ports found"
+      "risk_level": "Critical",
+      "high_risk_services": 2,
+      "average_risk": 0.7,
+      "port_details": [
+        {
+          "port": 443,
+          "risk_score": 0.7,
+          "risk_reason": "High-risk service (HTTPS)",
+          "service_name": "HTTPS"
+        },
+        {
+          "port": 53,
+          "risk_score": 0.7,
+          "risk_reason": "High-risk service (DNS)",
+          "service_name": "DNS"
+        }
+      ]
     }
   },
   "server_info": {
+    "asn": "Unknown",
+    "isp": "Unknown",
     "country": "US",
     "city": "Mountain View",
-    "org": "Google LLC",
-    "isp": "Google LLC",
-    "server_safe_ratio": 1.0,
+    "org": "AS15169 Google LLC",
+    "provider": "Unknown",
     "privacy": {
       "proxy": false,
       "vpn": false,
@@ -432,22 +484,25 @@ Returns structured JSON data for programmatic use:
       "relay": false
     },
     "risk_assessment": {
-      "geographic": {"risk_level": "Low"},
-      "provider": {"risk_level": "Low"},
+      "geographic": {
+        "is_high_risk": false,
+        "risk_level": "Low",
+        "reason": "IP is located in US, which is not flagged as high-risk"
+      },
+      "provider": {
+        "is_high_risk": false,
+        "risk_level": "Low",
+        "reason": "IP is not hosted by any flagged high-risk provider"
+      },
       "overall_risk_level": "Low"
-    }
+    },
+    "server_safe_ratio": 1.0
   },
-  "ptr": {
-    "ptr": "dns.google",
-    "ptr_risk": "Normal / Branded"
-  },
-  "is_safe": true,
-  "safe_ratio": 1.0,
   "risk_breakdown": {
-    "platform_safe_ratio": 1.0,
-    "server_safe_ratio": 1.0,
-    "port_safe_ratio": 1.0,
-    "comprehensive_safe_ratio": 1.0
+    "platform_safe_ratio": 0.75,
+    "ptr_safe_ratio": 0.8,
+    "port_safe_ratio": 0.255,
+    "server_safe_ratio": 1.0
   }
 }
 ```
