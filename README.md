@@ -2,18 +2,12 @@
 
 [![Black Hat Arsenal MEA 2025](https://img.shields.io/badge/Black%20Hat%20Arsenal-MEA%202025-white.svg)](https://blackhatmea.com/speaker/bayu-fedra-abdullah)
 
-**IPTI** analyzes public IP addresses **before** they are considered for
-whitelisting into an organization's private network. Version 2 replaces the old
-binary `SAFE`/`MALICIOUS` verdict with an **evidence-based, explainable**
-assessment: a threat score, an evidence-coverage measure, an identity-confidence
-measure and an exposure-risk measure, combined into an auditable
-recommendation.
+**IPTI** analyzes public IP addresses **before** they are considered for whitelisting into an organization's private network with an **evidence-based, explainable** assessment: a threat score, an evidence-coverage measure, an identity-confidence measure and an exposure-risk measure.
 
 > ⚠️ **Disclaimer — no threat feed can prove an IP is safe.** A clean result
 > means "no *current, known* malicious evidence was found across the enabled
 > sources", not "safe". Whitelisting is an organizational risk decision; IPTI
-> gives you the evidence and a recommendation, never a guarantee. The legacy
-> `is_safe` field is retained for compatibility but is **deprecated**.
+> gives you the evidence and a recommendation, never a guarantee.
 
 ---
 
