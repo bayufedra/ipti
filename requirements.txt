@@ -1,8 +1,3 @@
-certifi==2025.6.15
-charset-normalizer==3.4.2
-colorama==0.4.6
-dotenv==0.9.9
-idna==3.10
-python-dotenv==1.1.1
-requests==2.32.4
-urllib3==2.5.0
+# Runtime dependencies. For development extras use: pip install -e ".[dev]"
+httpx>=0.27,<1.0
+python-dotenv>=1.0,<2.0
