@@ -41,11 +41,15 @@ class IPTI:
         self.claimed_owner = claimed_owner
 
         base = settings or load_settings()
-        review = min(float(score_threshold), base.threat_deny_threshold)
+        # Map legacy knobs onto the new settings, clamping to valid ranges so a
+        # legacy call can't produce an invalid config (with_overrides skips the
+        # load-time range checks).
+        review = min(max(float(score_threshold), 0.0), base.threat_deny_threshold)
         self._settings = base.with_overrides(
-            max_threat_age_days=max_age_in_days,
+            max_threat_age_days=max(int(max_age_in_days), 1),
             threat_review_threshold=review,
         )
+        self._settings.validate()
         warnings.warn(
             "IPTI(...).ipti_check() now returns an evidence-based assessment. "
             "'is_safe' and 'safe_ratio' are deprecated; prefer result['decision'] "

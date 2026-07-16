@@ -130,6 +130,18 @@ def _review_reasons(
         reasons.append(policy.get("geographic_reason", "Country requires approval"))
     elif geo == "unexpected":
         reasons.append(policy.get("geographic_reason", "Country is unexpected"))
+    elif geo == "unknown" and (
+        settings.restricted_countries
+        or settings.require_approval_countries
+        or settings.expected_countries
+    ):
+        # Fail safe: a geographic policy is configured but the country could not
+        # be determined (e.g. IPInfo disabled/unavailable), so we cannot enforce
+        # it — escalate to review rather than silently approving.
+        reasons.append(
+            "A geographic policy is configured but the country is unknown; "
+            "enable IPInfo so the policy can be enforced"
+        )
     if threat.coverage < settings.min_threat_coverage:
         reasons.append(
             f"Evidence coverage {threat.coverage:.0%} is below the required "
