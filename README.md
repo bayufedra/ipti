@@ -9,6 +9,11 @@
 > sources", not "safe". Whitelisting is an organizational risk decision; IPTI
 > gives you the evidence and a recommendation, never a guarantee.
 
+## Maintainer
+Maintained by Bayu Fedra Abdullah ([LinkedIn](https://www.linkedin.com/in/bayufedra/)).
+- Presented at Black Hat MEA 2025 Arsenal: https://blackhatmea.com/speaker/bayu-fedra-abdullah
+- Security policy: see [SECURITY.md](SECURITY.md).
+
 ---
 
 ## Contents
